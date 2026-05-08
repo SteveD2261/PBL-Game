@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>MTB Lab — Tuberculosis Quiz</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--surface:#111a15;--surface2:#1a2a1f;
+  --accent:#2dff7a;--text:#e8f5ed;--muted:#6b8f76;
+  --border:#1e3328;--danger:#ff4d6d;--warning:#ffb347;
+  --fh:'Space Mono',monospace;--fb:'DM Sans',sans-serif;
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--fb)}
+.screen{display:none;min-height:100vh;padding:2rem 1.25rem;flex-direction:column;align-items:center;justify-content:center}
+.screen.active{display:flex}
+h1{font-family:var(--fh);font-size:clamp(1.2rem,5vw,1.8rem);color:var(--accent);margin-bottom:.2rem;text-align:center;line-height:1.35}
+h2{font-family:var(--fh);font-size:.95rem;color:var(--accent);margin-bottom:.9rem;text-align:center}
+.sub{font-size:.8rem;color:var(--muted);margin-bottom:1.8rem;font-family:var(--fh);text-align:center}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem;width:100%;max-width:420px}
+.lbl{font-size:.74rem;color:var(--muted);font-family:var(--fh);display:block;margin-bottom:.3rem;margin-top:.8rem}
+.lbl:first-child{margin-top:0}
+input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;color:var(--text);font-family:var(--fh);font-size:1rem;outline:none;transition:border .2s}
+input[type=text]:focus{border-color:var(--accent)}
+input.big{background:var(--surface2);border:2px solid var(--accent);border-radius:8px;padding:.9rem;color:var(--text);font-family:var(--fh);font-size:1.9rem;text-align:center;outline:none;width:100%}
+.btn{display:block;width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:.82rem;font-family:var(--fh);font-size:.88rem;font-weight:700;cursor:pointer;transition:transform .1s,opacity .2s;margin-top:.8rem}
+.btn:hover{opacity:.85}.btn:active{transform:scale(.97)}.btn:disabled{opacity:.28;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);opacity:1}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;width:100%;max-width:420px}
+.role-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1rem;cursor:pointer;transition:border .2s,transform .15s;text-align:center}
+.role-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+.ri{font-size:2rem;margin-bottom:.5rem}
+.rt{font-family:var(--fh);font-size:.88rem}
+.rd{font-size:.72rem;color:var(--muted);margin-top:.2rem}
+.code-display{font-family:var(--fh);font-size:3.2rem;letter-spacing:.2em;color:var(--accent);text-align:center;padding:1.1rem;border:2px dashed var(--border);border-radius:12px;margin:.7rem 0}
+.plist{list-style:none;display:flex;flex-direction:column;gap:.35rem;max-height:190px;overflow-y:auto;margin-top:.4rem}
+.pitem{background:var(--surface2);border-radius:6px;padding:.4rem .8rem;font-size:.8rem;display:flex;align-items:center;gap:.45rem}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.tbar-wrap{width:100%;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:.7rem}
+.tbar{height:100%;border-radius:4px;background:var(--accent);transition:width .25s linear,background .4s}
+.tnum{font-family:var(--fh);font-size:2.4rem;text-align:center;margin-bottom:.2rem;line-height:1}
+.qcount{font-family:var(--fh);font-size:.7rem;color:var(--muted);text-align:center;margin-bottom:.9rem}
+.qtext{font-family:var(--fh);font-size:clamp(1rem,3.5vw,1.3rem);color:var(--text);line-height:1.6;text-align:center;margin-bottom:1.1rem}
+.lb-wrap{width:100%;max-width:480px}
+.lbr{display:grid;grid-template-columns:2.2rem 1fr auto;align-items:center;gap:.55rem;padding:.6rem .9rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:.4rem}
+.lbr.me{border-color:var(--accent);background:var(--surface2)}
+.lbrank{font-family:var(--fh);font-size:.8rem;color:var(--muted);text-align:center}
+.lbname{font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbscore{font-family:var(--fh);font-size:.85rem;color:var(--accent)}
+.abox{background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:1rem;text-align:center;margin-bottom:.7rem}
+.alabel{font-size:.68rem;color:var(--muted);font-family:var(--fh);margin-bottom:.15rem}
+.aval{font-family:var(--fh);font-size:2.2rem;color:var(--accent);line-height:1.2}
+.aunit{font-size:.75rem;color:var(--muted);margin-top:.1rem}
+.pts{font-family:var(--fh);font-size:1rem;color:var(--warning);margin-top:.35rem}
+.sub-badge{background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:.8rem;text-align:center;font-family:var(--fh);font-size:.8rem;color:var(--accent)}
+.pw{display:flex;gap:7px;justify-content:center;padding:.8rem}
+.dp{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pu 1.2s ease-in-out infinite}
+.dp:nth-child(2){animation-delay:.2s}.dp:nth-child(3){animation-delay:.4s}
+@keyframes pu{0%,80%,100%{opacity:.2;transform:scale(.75)}40%{opacity:1;transform:scale(1)}}
+.sep{height:1px;background:var(--border);margin:.9rem 0}
+.subs{font-size:.76rem;color:var(--muted);font-family:var(--fh);text-align:center;margin-top:.4rem}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:.35rem;margin:.55rem 0;max-height:220px;overflow-y:auto}
+.ritem{background:var(--surface2);border-radius:7px;padding:.5rem .7rem}
+.rname{font-size:.68rem;color:var(--muted);font-family:var(--fh);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rguess{font-family:var(--fh);font-size:.88rem;margin-top:.1rem}
+.rpts{font-size:.7rem;color:var(--accent);margin-top:.05rem}
+.err{color:var(--danger);font-size:.76rem;text-align:center;font-family:var(--fh);margin-top:.5rem;min-height:1.2em}
+.logo{font-family:var(--fh);font-size:.62rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.4rem;text-align:center}
+.qbox{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;font-size:1.1rem;line-height:1.6;margin-bottom:.7rem;font-family:var(--fh);width:100%;max-width:520px}
+.status{font-size:.72rem;color:var(--muted);font-family:var(--fh);text-align:center;margin-top:.4rem;min-height:1.1em}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="s-land" class="screen active">
+  <div class="logo">MTB Lab</div>
+  <h1>How Well Do You Know<br><em style="color:var(--text);font-style:normal">M. tuberculosis</em>?</h1>
+  <div class="sub">// real-time number-guessing game</div>
+  <div class="role-grid">
+    <div class="role-card" onclick="go('s-tsetup')">
+      <div class="ri">🔬</div><div class="rt">Teacher</div><div class="rd">Host a session</div>
+    </div>
+    <div class="role-card" onclick="go('s-join')">
+      <div class="ri">🧫</div><div class="rt">Student</div><div class="rd">Join with a code</div>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER SETUP -->
+<div id="s-tsetup" class="screen">
+  <h1>Host a Game</h1>
+  <div class="card">
+    <span class="lbl">Your name</span>
+    <input type="text" id="t-name" placeholder="Dr. Smith" maxlength="20"/>
+    <button class="btn" onclick="createRoom()">Create room</button>
+    <button class="btn btn-ghost" onclick="go('s-land')">Back</button>
+    <div class="err" id="t-err"></div>
+    <div class="status" id="t-status"></div>
+  </div>
+</div>
+
+<!-- TEACHER LOBBY -->
+<div id="s-tlobby" class="screen">
+  <h2>Waiting for students</h2>
+  <div class="card" style="text-align:center;max-width:360px">
+    <div style="font-size:.7rem;color:var(--muted);font-family:var(--fh)">Share this code</div>
+    <div class="code-display" id="t-code-disp">----</div>
+    <div style="font-size:.76rem;color:var(--muted);margin-bottom:.7rem">Everyone opens the same file → Student → enters this code</div>
+    <div class="sep"></div>
+    <div style="font-size:.72rem;color:var(--muted);font-family:var(--fh)">Players joined (<span id="t-pcount">0</span>)</div>
+    <ul class="plist" id="t-plist"></ul>
+    <button class="btn" id="t-startbtn" onclick="teacherStart()" disabled>Start game</button>
+  </div>
+</div>
+
+<!-- JOIN -->
+<div id="s-join" class="screen">
+  <h1>Join a Game</h1>
+  <div class="card">
+    <span class="lbl">Your name</span>
+    <input type="text" id="s-name" placeholder="Alex" maxlength="20"/>
+    <span class="lbl">Room code</span>
+    <input type="text" id="s-code" placeholder="XXXX" maxlength="4"
+      style="letter-spacing:.18em;text-transform:uppercase;font-size:1.4rem;text-align:center"
+      oninput="this.value=this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter')joinRoom()"/>
+    <button class="btn" onclick="joinRoom()">Join</button>
+    <button class="btn btn-ghost" onclick="go('s-land')">Back</button>
+    <div class="err" id="j-err"></div>
+    <div class="status" id="j-status"></div>
+  </div>
+</div>
+
+<!-- STUDENT LOBBY -->
+<div id="s-slobby" class="screen">
+  <h2>You're in!</h2>
+  <div class="card" style="text-align:center;max-width:360px">
+    <div style="font-size:.85rem;margin-bottom:.35rem">Room <span id="s-jcode" style="font-family:var(--fh);color:var(--accent)"></span></div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem">Waiting for teacher to start...</div>
+    <div class="pw"><div class="dp"></div><div class="dp"></div><div class="dp"></div></div>
+    <div class="sep"></div>
+    <div style="font-size:.7rem;color:var(--muted);font-family:var(--fh)">Players in room</div>
+    <ul class="plist" id="s-plist"></ul>
+  </div>
+</div>
+
+<!-- TEACHER QUESTION -->
+<div id="s-tq" class="screen">
+  <div style="width:100%;max-width:520px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+      <h2 style="margin:0">Q<span id="t-qn">1</span>/<span id="t-qt">10</span></h2>
+      <div class="tnum" id="t-timer">15</div>
+    </div>
+    <div class="tbar-wrap"><div class="tbar" id="t-tbar" style="width:100%"></div></div>
+    <div class="qbox" id="t-qtext"></div>
+    <div class="subs" id="t-subs">Waiting for answers...</div>
+    <button class="btn" onclick="teacherReveal()" style="max-width:520px;margin-top:.7rem">Reveal answer</button>
+  </div>
+</div>
+
+<!-- STUDENT QUESTION -->
+<div id="s-sq" class="screen">
+  <div style="width:100%;max-width:380px">
+    <div class="qcount" id="s-qcount">Question 1 of 10</div>
+    <div class="tnum" id="s-timer">15</div>
+    <div class="tbar-wrap"><div class="tbar" id="s-tbar" style="width:100%"></div></div>
+    <div class="qtext" id="s-qtext"></div>
+    <div id="s-input-wrap">
+      <input class="big" type="text" inputmode="numeric" id="s-guess" placeholder="0"
+        onkeydown="if(event.key==='Enter')submitGuess()"/>
+      <button class="btn" onclick="submitGuess()">Submit</button>
+    </div>
+    <div id="s-subbadge" style="display:none">
+      <div class="sub-badge">✓ Answer submitted — waiting for reveal</div>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER REVEAL -->
+<div id="s-treveal" class="screen">
+  <div style="width:100%;max-width:520px">
+    <h2>Answer revealed</h2>
+    <div class="abox">
+      <div class="alabel">Correct answer</div>
+      <div class="aval" id="t-aans"></div>
+      <div class="aunit" id="t-aunit"></div>
+    </div>
+    <div class="rgrid" id="t-rgrid"></div>
+    <button class="btn" onclick="teacherNext()" id="t-nextbtn" style="max-width:520px">Leaderboard</button>
+  </div>
+</div>
+
+<!-- STUDENT REVEAL -->
+<div id="s-sreveal" class="screen">
+  <div style="width:100%;max-width:360px;text-align:center">
+    <h2>Round result</h2>
+    <div class="abox">
+      <div class="alabel">Correct answer</div>
+      <div class="aval" id="s-aans"></div>
+      <div class="aunit" id="s-aunit"></div>
+    </div>
+    <div id="s-rinfo" style="margin-bottom:.9rem"></div>
+    <div class="pw"><div class="dp"></div><div class="dp"></div><div class="dp"></div></div>
+    <div style="font-size:.7rem;color:var(--muted);font-family:var(--fh)">Waiting for teacher...</div>
+  </div>
+</div>
+
+<!-- TEACHER LB -->
+<div id="s-tlb" class="screen">
+  <div class="lb-wrap">
+    <h2>Leaderboard — after Q<span id="tlb-q"></span></h2>
+    <div id="tlb-list"></div>
+    <button class="btn" onclick="teacherContinue()" id="tlb-btn" style="max-width:480px">Next question</button>
+  </div>
+</div>
+
+<!-- STUDENT LB -->
+<div id="s-slb" class="screen">
+  <div class="lb-wrap" style="text-align:center">
+    <h2>Leaderboard — after Q<span id="slb-q"></span></h2>
+    <div id="slb-list"></div>
+    <div class="pw" style="margin-top:.7rem"><div class="dp"></div><div class="dp"></div><div class="dp"></div></div>
+    <div style="font-size:.7rem;color:var(--muted);font-family:var(--fh)">Waiting for teacher...</div>
+  </div>
+</div>
+
+<!-- FINAL TEACHER -->
+<div id="s-tfinal" class="screen">
+  <div class="lb-wrap">
+    <h1>Game Over!</h1><div class="sub">// final results</div>
+    <div id="tf-list"></div>
+    <button class="btn" style="margin-top:1rem;max-width:480px" onclick="location.reload()">New game</button>
+  </div>
+</div>
+
+<!-- FINAL STUDENT -->
+<div id="s-sfinal" class="screen">
+  <div class="lb-wrap" style="text-align:center">
+    <h1>Game Over!</h1><div class="sub">// final results</div>
+    <div id="sf-list"></div>
+    <button class="btn" style="margin-top:1rem" onclick="location.reload()">Play again</button>
+  </div>
+</div>
+
+<script>
+// ── QUESTIONS ──────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  {q:"What percentage (%) of the M. tuberculosis cell wall is made up of lipids?",            answer:60,   unit:"%"},
+  {q:"How many hours does it take for M. tuberculosis to double in number?",                  answer:24,   unit:"hours"},
+  {q:"Approximately how many genes does the M. tuberculosis H37Rv genome contain?",           answer:4000, unit:"genes"},
+  {q:"How many days can M. tuberculosis survive in the environment if protected from light?", answer:74,   unit:"days"},
+  {q:"How many minutes must the Ziehl-Neelsen primary stain be applied?",                    answer:5,    unit:"minutes"},
+  {q:"What percentage (%) oxygen concentration does M. tuberculosis grow best in?",           answer:20,   unit:"% oxygen"},
+  {q:"What is the optimal growth temperature (°C) for M. tuberculosis?",                     answer:37,   unit:"°C"},
+  {q:"How many days does it take for M. tuberculosis to form visible colonies on Löwenstein-Jensen medium?", answer:21, unit:"days"},
+  {q:"How many years can M. tuberculosis remain dormant inside a human host?",               answer:40,   unit:"years"},
+  {q:"How many bacilli are required to cause a M. tuberculosis infection (ID₅₀)?",           answer:10,   unit:"bacilli"}
+];
+const TIMER_SECS = 30;
+
+// ── TRANSPORT: ntfy.sh ─────────────────────────────────────────────────────
+// ntfy.sh is a free, open, no-account pub/sub service.
+// We publish JSON to a unique topic and subscribe via Server-Sent Events.
+// No API key, no CORS issues, works in every browser.
+const NTFY = 'https://ntfy.sh';
+
+function topicFor(code, suffix) {
+  // Include date so topics from previous days never clash
+  const d = new Date();
+  const day = d.getFullYear() + '' + (d.getMonth()+1) + '' + d.getDate();
+  return `mtblab-${day}-${code}-${suffix}`;
+}
+
+async function publish(code, direction, payload) {
+  const topic = topicFor(code, direction);
+  try {
+    await fetch(`${NTFY}/${topic}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {
+    console.warn('publish error', e);
+  }
+}
+
+function subscribe(code, direction, onMsg) {
+  const topic = topicFor(code, direction);
+  // since=0 means only receive messages published AFTER we subscribe — no replays
+  const url = `${NTFY}/${topic}/sse?since=0`;
+  const es  = new EventSource(url);
+  es.onmessage = e => {
+    try {
+      const wrapper = JSON.parse(e.data);
+      if (wrapper.event === 'keepalive' || wrapper.event === 'open') return;
+      const payload = JSON.parse(wrapper.message);
+      onMsg(payload);
+    } catch(_) {}
+  };
+  return es;
+}
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let myRole      = null;
+let myName      = null;
+let myId        = null;
+let roomCode    = null;
+let esHandle    = null; // EventSource
+
+// Teacher
+let players     = {}; // id -> { name }
+let scores      = {}; // id -> number
+let submissions = {}; // id -> number
+let qIndex      = 0;
+
+// Student
+let myStudentId = null;
+
+let timerInt = null;
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function esc(s) {
+  const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML;
+}
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2,5);
+}
+function genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c = '';
+  for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
+  return c;
+}
+function calcPts(guess, answer) {
+  if (guess == null || isNaN(guess)) return 0;
+  const ratio = Math.abs(guess - answer) / answer;
+  return Math.max(0, Math.round(100 * (1 - ratio)));
+}
+function buildLB() {
+  return Object.entries(players)
+    .map(([id, p]) => ({ id, name: p.name, score: scores[id] || 0 }))
+    .sort((a, b) => b.score - a.score);
+}
+function renderLB(lb, highlightId) {
+  const m = ['🥇','🥈','🥉'];
+  return lb.map((p, i) => `
+    <div class="lbr ${p.id === highlightId ? 'me' : ''}">
+      <div class="lbrank">${m[i] || i+1}</div>
+      <div class="lbname">${esc(p.name)}</div>
+      <div class="lbscore">${p.score} pts</div>
+    </div>`).join('');
+}
+function startTimer(numId, barId, onEnd) {
+  clearInterval(timerInt);
+  let rem = TIMER_SECS;
+  const bar = document.getElementById(barId);
+  const num = document.getElementById(numId);
+  if (num) num.textContent = rem;
+  if (bar) { bar.style.width = '100%'; bar.style.background = 'var(--accent)'; }
+  timerInt = setInterval(() => {
+    rem--;
+    if (num) num.textContent = rem;
+    const pct = (rem / TIMER_SECS) * 100;
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.style.background = rem <= 5 ? 'var(--danger)' : rem <= 8 ? 'var(--warning)' : 'var(--accent)';
+    }
+    if (rem <= 0) { clearInterval(timerInt); onEnd(); }
+  }, 1000);
+}
+
+// ── TEACHER ────────────────────────────────────────────────────────────────
+async function createRoom() {
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) { document.getElementById('t-err').textContent = 'Enter your name'; return; }
+
+  myRole = 'teacher'; myName = name;
+  myId   = 'T-' + genId();
+  roomCode = genCode();
+
+  document.getElementById('t-status').textContent = 'Testing connection...';
+  document.getElementById('t-err').textContent = '';
+
+  // Quick connectivity test
+  try {
+    const r = await fetch(`${NTFY}/${topicFor(roomCode,'down')}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'ping' })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+  } catch(e) {
+    document.getElementById('t-err').textContent = 'Cannot reach server. Check your internet connection.';
+    document.getElementById('t-status').textContent = '';
+    return;
+  }
+
+  document.getElementById('t-code-disp').textContent = roomCode;
+  document.getElementById('t-status').textContent = '';
+  go('s-tlobby');
+
+  // Listen for student messages (up = students → teacher)
+  esHandle = subscribe(roomCode, 'up', msg => {
+    if (msg.type === 'join') {
+      const { id, name } = msg;
+      if (!players[id]) {
+        players[id] = { name };
+        scores[id]  = 0;
+      }
+      refreshTeacherLobby();
+      // Echo full player list back down so everyone's lobby updates
+      publish(roomCode, 'down', {
+        type: 'playerList',
+        players: Object.entries(players).map(([i, p]) => ({ id: i, name: p.name }))
+      });
+    }
+    if (msg.type === 'submission') {
+      if (submissions[msg.id] == null) {
+        submissions[msg.id] = msg.value;
+        const tot = Object.keys(players).length;
+        const got = Object.keys(submissions).length;
+        if (document.getElementById('t-subs'))
+          document.getElementById('t-subs').textContent = `${got} / ${tot} answered`;
+      }
+    }
+  });
+}
+
+function refreshTeacherLobby() {
+  const arr = Object.values(players);
+  document.getElementById('t-pcount').textContent = arr.length;
+  document.getElementById('t-plist').innerHTML = arr.map(p =>
+    `<li class="pitem"><div class="pdot"></div>${esc(p.name)}</li>`).join('');
+  document.getElementById('t-startbtn').disabled = arr.length === 0;
+}
+
+function teacherStart() {
+  qIndex = 0; submissions = {};
+  publish(roomCode, 'down', { type: 'start' });
+  teacherShowQuestion();
+}
+
+function teacherShowQuestion() {
+  const q = QUESTIONS[qIndex];
+  submissions = {};
+  document.getElementById('t-qn').textContent   = qIndex + 1;
+  document.getElementById('t-qt').textContent   = QUESTIONS.length;
+  document.getElementById('t-qtext').textContent = q.q;
+  const tot = Object.keys(players).length;
+  document.getElementById('t-subs').textContent  = `0 / ${tot} answered`;
+  publish(roomCode, 'down', { type: 'question', qIndex, q: q.q });
+  go('s-tq');
+  startTimer('t-timer', 't-tbar', () => {});
+}
+
+function teacherReveal() {
+  clearInterval(timerInt);
+  const q   = QUESTIONS[qIndex];
+  const ans = q.answer;
+  const revealItems = {};
+
+  Object.entries(players).forEach(([id, p]) => {
+    const guess = submissions[id] != null ? submissions[id] : null;
+    const pts   = calcPts(guess, ans);
+    scores[id]  = (scores[id] || 0) + pts;
+    revealItems[id] = { name: p.name, guess, pts };
+  });
+
+  const lb = buildLB();
+  publish(roomCode, 'down', { type: 'reveal', answer: ans, unit: q.unit, revealItems, leaderboard: lb });
+
+  // Teacher view
+  document.getElementById('t-aans').textContent  = ans;
+  document.getElementById('t-aunit').textContent = q.unit;
+  document.getElementById('t-rgrid').innerHTML = Object.values(revealItems).map(it => `
+    <div class="ritem">
+      <div class="rname">${esc(it.name)}</div>
+      <div class="rguess">${it.guess != null ? it.guess : '—'}</div>
+      <div class="rpts">+${it.pts} pts</div>
+    </div>`).join('');
+
+  const isLast = qIndex >= QUESTIONS.length - 1;
+  document.getElementById('t-nextbtn').textContent = isLast ? 'Final results' : 'Leaderboard';
+  go('s-treveal');
+}
+
+function teacherNext() {
+  const isLast = qIndex >= QUESTIONS.length - 1;
+  const lb = buildLB();
+  if (isLast) {
+    publish(roomCode, 'down', { type: 'final', leaderboard: lb });
+    document.getElementById('tf-list').innerHTML = renderLB(lb, null);
+    go('s-tfinal');
+  } else {
+    publish(roomCode, 'down', { type: 'leaderboard', afterQ: qIndex, leaderboard: lb });
+    document.getElementById('tlb-q').textContent   = qIndex + 1;
+    document.getElementById('tlb-list').innerHTML  = renderLB(lb, null);
+    document.getElementById('tlb-btn').textContent = 'Next question';
+    go('s-tlb');
+  }
+}
+
+function teacherContinue() {
+  qIndex++;
+  teacherShowQuestion();
+}
+
+// ── STUDENT ────────────────────────────────────────────────────────────────
+async function joinRoom() {
+  const name = document.getElementById('s-name').value.trim();
+  const code = document.getElementById('s-code').value.trim().toUpperCase();
+  const err  = document.getElementById('j-err');
+
+  if (!name)             { err.textContent = 'Enter your name'; return; }
+  if (code.length !== 4) { err.textContent = 'Enter a 4-letter code'; return; }
+
+  myRole      = 'student';
+  myName      = name;
+  myStudentId = 'S-' + genId();
+  myId        = myStudentId;
+  roomCode    = code;
+
+  document.getElementById('j-status').textContent = 'Connecting...';
+  err.textContent = '';
+
+  // Subscribe to teacher messages (down = teacher→students)
+  esHandle = subscribe(code, 'down', msg => {
+    if (msg.type === 'playerList') {
+      document.getElementById('s-plist').innerHTML = msg.players.map(p =>
+        `<li class="pitem"><div class="pdot"></div>${esc(p.name)}</li>`).join('');
+    }
+    if (msg.type === 'question') {
+      clearInterval(timerInt);
+      const qi = msg.qIndex;
+      document.getElementById('s-qcount').textContent        = `Question ${qi + 1} of ${QUESTIONS.length}`;
+      document.getElementById('s-qtext').textContent         = msg.q;
+      document.getElementById('s-guess').value               = '';
+      document.getElementById('s-input-wrap').style.display  = 'block';
+      document.getElementById('s-subbadge').style.display    = 'none';
+      go('s-sq');
+      startTimer('s-timer', 's-tbar', () => { autoSubmit(); });
+    }
+    if (msg.type === 'reveal') {
+      clearInterval(timerInt);
+      document.getElementById('s-aans').textContent  = msg.answer;
+      document.getElementById('s-aunit').textContent = msg.unit;
+      const me = msg.revealItems[myStudentId];
+      let html = '';
+      if (me) {
+        const g = me.guess != null ? `Your guess: ${me.guess}` : 'No answer submitted';
+        html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:.3rem">${g}</div>
+                <div class="pts">+${me.pts} points this round</div>`;
+      }
+      document.getElementById('s-rinfo').innerHTML = html;
+      go('s-sreveal');
+    }
+    if (msg.type === 'leaderboard') {
+      document.getElementById('slb-q').textContent   = msg.afterQ + 1;
+      document.getElementById('slb-list').innerHTML  = renderLB(msg.leaderboard, myStudentId);
+      go('s-slb');
+    }
+    if (msg.type === 'final') {
+      document.getElementById('sf-list').innerHTML = renderLB(msg.leaderboard, myStudentId);
+      go('s-sfinal');
+    }
+  });
+
+  // Announce join to teacher
+  await publish(code, 'up', { type: 'join', id: myStudentId, name });
+
+  document.getElementById('s-jcode').textContent          = code;
+  document.getElementById('j-status').textContent         = '';
+  go('s-slobby');
+}
+
+function autoSubmit() {
+  const val = parseFloat(document.getElementById('s-guess').value);
+  if (!isNaN(val) && val >= 0) {
+    publish(roomCode, 'up', { type: 'submission', id: myStudentId, value: val });
+  }
+  document.getElementById('s-input-wrap').style.display = 'none';
+  document.getElementById('s-subbadge').style.display   = 'block';
+}
+
+function submitGuess() {
+  const val = parseFloat(document.getElementById('s-guess').value);
+  if (isNaN(val) || val < 0) return;
+  clearInterval(timerInt);
+  publish(roomCode, 'up', { type: 'submission', id: myStudentId, value: val });
+  document.getElementById('s-input-wrap').style.display = 'none';
+  document.getElementById('s-subbadge').style.display   = 'block';
+}
+</script>
+</body>
+</html>
